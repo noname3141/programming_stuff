@@ -1,0 +1,94 @@
+# Don't initialize any version control
+cargo new my_project --vcs none
+
+# Or use a different VCS
+cargo new my_project --vcs mercurial
+
+To permanently disable Git initialization for every cargo new call, set the default in your global Cargo configuration file (~/.cargo/config.toml):
+[cargo-new]
+vcs = "none"
+
+//options for build
+When creating a project with cargo new, you have several options to customize the setup.
+Here are all the other flags available for cargo new, grouped by what they do:
+Project Types (Targets)
+• --lib: Creates a library package with a src/lib.rs file instead of an executable binary.
+• --bin: Creates a binary application (the default behavior you asked about previously).
+Source Control Options
+• --vcs <vcs>: Specifies the Version Control System to initialize. You can choose git, hg (Mercurial), pijul, fossil, or none.
+• --registry <registry>: Pre-configures a specific package registry in your Cargo.toml instead of defaulting to crates.io.
+Naming Constraints
+• --name <name>: Sets the package name in Cargo.toml. By default, Cargo uses the directory name, but this lets you use a different name for the code itself.
+Display & Output
+• -v, --verbose: Enables verbose output, showing extra details while creating the project.
+• -q, --quiet: Enables quiet mode, suppressing all output unless there is an error.
+• --color <when>: Controls terminal coloring. You can set this to auto, always, or never.
+• -h, --help: Prints the help message with descriptions of all commands.
+Would you like to see how to initialize a project using a specific version control system or how to override the project's internal name?
+
+
+//init
+### Cargo: Project Lifecycle & Building
+
+| Command | Action | Key Flags / Details |
+| --- | --- | --- |
+| `cargo new <name>` | Creates a binary executable project | `--lib` (create a library), `--vcs none` (skip Git init) |
+| `cargo init` | Turns the current directory into a Cargo project | Same flags as `cargo new` |
+| `cargo build` | Compiles the project (unoptimized, with debug symbols) | Output in `target/debug/` |
+| `cargo build --release` | Compiles with full optimizations (`-O3` equivalent) | Output in `target/release/` |
+| `cargo run` | Builds and executes the main binary in one step | Pass program arguments after `--`: `cargo run -- arg1 arg2` |
+| `cargo check` | Type-checks and borrows-checks code without generating machine code | Much faster than `cargo build` during active coding |
+| `cargo clean` | Deletes the `target/` directory to free disk space | Clears all cached artifacts |
+
+---
+
+### Crates & Dependencies (`crates.io`)
+
+| Command | Action | Key Flags / Details |
+| --- | --- | --- |
+| `cargo add <crate>` | Fetches and adds a crate to `Cargo.toml` | `--dev` (test-only), `-F <features>` (enable feature flags) |
+| `cargo rm <crate>` | Removes a dependency from `Cargo.toml` | Cleans up the manifest entry |
+| `cargo update` | Updates dependencies within semantic version ranges | Updates `Cargo.lock` to latest allowed patch/minor releases |
+| `cargo tree` | Displays the dependency tree | Visualizes transitive dependencies and duplicates |
+| `cargo search <query>` | Searches crates.io from the terminal | Shows crate name, latest version, and brief description |
+| `cargo install <binary-crate>` | Installs a global CLI tool written in Rust | Places executable in `~/.cargo/bin/` |
+| `cargo uninstall <crate>` | Removes an installed CLI tool | Cleans binary from `~/.cargo/bin/` |
+
+---
+
+### Testing, Linting & Documentation
+
+| Command | Action | Key Flags / Details |
+| --- | --- | --- |
+| `cargo test` | Runs unit tests, integration tests, and doc-tests | `cargo test <name>` (filter by test name) |
+| `cargo test -- --nocapture` | Runs tests and prints stdout even if tests pass | Useful for debugging `println!` output |
+| `cargo clippy` | Official linter; catches idiomatic/anti-pattern mistakes | `cargo clippy -- -D warnings` (treat linter warnings as errors) |
+| `cargo fmt` | Formats the codebase using `rustfmt` | Run `cargo fmt --check` in CI to verify style without writing |
+| `cargo doc` | Builds HTML documentation for the project & dependencies | `--open` (automatically opens the docs in your browser) |
+
+---
+
+### Rustup & Toolchain Management
+
+| Command | Action | Key Flags / Details |
+| --- | --- | --- |
+| `rustup update` | Updates all installed toolchains and tools to the latest release |  |
+| `rustup toolchain list` | Lists all installed compilers | e.g., `stable`, `nightly`, `beta` |
+| `rustup toolchain install <channel>` | Installs a specific compiler channel | `nightly`, `stable`, or pinned version like `1.82.0` |
+| `rustup default <channel>` | Changes the system-wide default toolchain | e.g., `rustup default stable` |
+| `rustup target add <target>` | Adds cross-compilation target architectures | e.g., `rustup target add riscv32i-unknown-none-elf` |
+| `rustup component add <comp>` | Installs developer components | e.g., `clippy`, `rustfmt`, `rust-analyzer`, `llvm-tools` |
+| `rustup component list` | Displays installed and available components | Shows status per component |
+
+---
+
+### Low-Level Compiler (`rustc`)
+
+You rarely invoke `rustc` directly outside of single-file experiments or compiler inspection:
+
+| Command | Action | Key Flags / Details |
+| --- | --- | --- |
+| `rustc main.rs` | Compiles a single file without Cargo | Generates binary `./main` |
+| `rustc --explain E0382` | Detailed terminal explanation and examples for an error code | Replace `E0382` with any compiler error code |
+| `rustc --emit=asm main.rs` | Emits assembly output rather than an executable | Useful for inspecting generated machine instructions |
+| `rustc --print target-list` | Lists all supported CPU architecture and OS targets |  |

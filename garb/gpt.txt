@@ -1,0 +1,132 @@
+What you’re describing is doable in principle, but there’s an important caveat: captive portals vary a lot, and some institutions explicitly prohibit automated logins. If this is your own account and allowed on your network, you can script it—but you’ll need to inspect the portal first.
+
+Here’s the general approach.
+
+---
+
+## 1. Inspect the captive portal login request
+
+1. Connect to the network
+2. Open the login page in a browser
+3. Open DevTools (Network tab)
+4. Submit the login form once manually
+5. Look for the **POST request** that was sent
+
+You need to capture:
+
+* URL (endpoint)
+* Method (POST)
+* Form fields (username, password, tokens, etc.)
+* Headers (sometimes required)
+* Cookies (often important)
+
+---
+
+## 2. Convert that request to `curl`
+
+Browsers can do this for you:
+
+* Right-click the request → **Copy → Copy as cURL**
+
+You’ll get something like:
+
+```bash
+curl 'https://portal.example.com/login' \
+  -X POST \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -H 'Cookie: session=abc123' \
+  --data-raw 'username=myuser&password=mypass'
+```
+
+Test this in your terminal first.
+
+---
+
+## 3. Turn it into a script
+
+### Simple Bash script
+
+```bash
+#!/bin/bash
+
+USERNAME="your_username"
+PASSWORD="your_password"
+
+curl -L 'https://portal.example.com/login' \
+  -X POST \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  --data "username=$USERNAME&password=$PASSWORD" \
+  -c cookies.txt -b cookies.txt
+```
+
+---
+
+## 4. Handle common complications
+
+### 🔐 CSRF tokens
+
+Many portals include a hidden token:
+
+```html
+<input type="hidden" name="csrf_token" value="xyz123">
+```
+
+You must fetch it first:
+
+```bash
+TOKEN=$(curl -s https://portal.example.com | grep -oP 'name="csrf_token" value="\K[^"]+')
+```
+
+Then send it:
+
+```bash
+--data "username=$USERNAME&password=$PASSWORD&csrf_token=$TOKEN"
+```
+
+---
+
+### 🍪 Cookies (very common)
+
+Use:
+
+```bash
+-c cookies.txt   # save cookies
+-b cookies.txt   # send cookies
+```
+
+---
+
+### 🔁 Redirect-based login
+
+Some portals don’t have a visible login URL. You may need to:
+
+1. Hit a known site (e.g. `http://example.com`)
+2. Get redirected to portal
+3. Extract session info
+4. Then POST
+
+---
+
+## 5. Automate on connect
+
+You can run your script:
+
+* via cron
+* via network manager hooks (Linux)
+* or manually when you connect
+
+---
+
+## ⚠️ Important notes
+
+* Make sure this doesn’t violate your institute’s policies
+* Some portals use JavaScript-heavy flows → `curl` alone may not work (then tools like headless browsers are needed)
+* Never hardcode credentials in shared systems
+
+---
+
+If you want, paste:
+
+* the “Copy as cURL” output (remove your password)
+  and I can help you clean it into a reliable script 👍
+
